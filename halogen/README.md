@@ -38,8 +38,30 @@ journalctl --user -u halogen-flash -f            # engine log (serve_api: ... t/
 
 Tuning notes (measured on this box, Sept 2026): weights pinned 65.6 GiB in 1.4 s; 37–45 t/s
 decode, 700–1,200 t/s prefill with 99 % prompt-cache hits; `HALOGEN_MAX_TOK=32768` is the fastest
-prefill chunk at 262K ctx; `HALOGEN_KV_POOL_POSITIONS` 262144 → 393216 if you run two long
-sessions at once (costs a few seconds of memory compaction at start); `HALOGEN_MAX_TOKENS_DEFAULT`
+prefill chunk at 262K ctx; keep `HALOGEN_KV_POOL_POSITIONS` at 262144 on a 128 GB box that also
+runs a desktop — 393216 left 3.6 GiB of host memory and the engine froze 60–120 s every few
+minutes in kernel memory compaction (see "Host tuning" below); `HALOGEN_MAX_TOKENS_DEFAULT`
 16384 is the recommended agentic budget. Clients: OpenAI-compatible `/v1` with native tools and
 streaming — see [mul-cps/academicai-opencode](https://github.com/mul-cps/academicai-opencode)
 for the OpenCode hybrid profile that pairs it with API models.
+
+## Host tuning (avoids the compaction freezes)
+
+Symptom: `journalctl --user -u halogen-flash` shows `the engine has not answered PING for 45s:
+the kernel is compacting host memory`, GPU utilisation drops to 0 for 1–2 min while OpenCode is
+busy. Cause: the engine pins ~68 GiB with 2 MiB pages and streams the 51B n-gram table through the
+page cache; with little free memory every allocation waits for direct compaction. Fix (root):
+
+```sh
+# THP: never block a page fault on direct compaction; kcompactd does it in the background
+echo 'w /sys/kernel/mm/transparent_hugepage/defrag - - - - defer' | sudo tee /etc/tmpfiles.d/thp-defrag.conf
+echo defer | sudo tee /sys/kernel/mm/transparent_hugepage/defrag
+# keep ~2 GiB free so contiguous blocks exist; compact proactively
+printf 'vm.min_free_kbytes = 2097152
+vm.compaction_proactiveness = 40
+vm.swappiness = 1
+' | sudo tee /etc/sysctl.d/90-halogen.conf
+sudo sysctl --system >/dev/null
+```
+
+and don't run other multi-GB tenants (VMs) alongside the model: `virsh shutdown win11`.

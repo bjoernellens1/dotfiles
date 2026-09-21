@@ -21,7 +21,7 @@ Environment=HALOGEN_CACHE_DIR=/cache
 Environment=HALOGEN_CHECKPOINT=/models/qwen38-flash-next-w4b.hgn
 Environment=HALOGEN_TOKENIZER=/models/tokenizer
 Environment=HALOGEN_CTX=262144
-Environment=HALOGEN_KV_POOL_POSITIONS=393216
+Environment=HALOGEN_KV_POOL_POSITIONS=262144
 Environment=HALOGEN_MAX_TOK=32768
 Environment=HALOGEN_PROMPT_CACHE=2
 Environment=HALOGEN_COMPOSABLE_CONTEXT=0
