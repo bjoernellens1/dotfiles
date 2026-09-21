@@ -22,7 +22,9 @@ Environment=HALOGEN_CHECKPOINT=/models/qwen38-flash-next-w4b.hgn
 Environment=HALOGEN_TOKENIZER=/models/tokenizer
 Environment=HALOGEN_CTX=262144
 Environment=HALOGEN_KV_POOL_POSITIONS=262144
-Environment=HALOGEN_MAX_TOK=32768
+# keep page-cache headroom for the 48 GiB n-gram table (default 20 -> disk thrash on this box)
+Environment=HALOGEN_HOST_RESERVE_GIB=32
+Environment=HALOGEN_MAX_TOK=16384
 Environment=HALOGEN_PROMPT_CACHE=2
 Environment=HALOGEN_COMPOSABLE_CONTEXT=0
 Environment=HALOGEN_TEMPERATURE=1.0

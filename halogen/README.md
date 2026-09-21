@@ -37,8 +37,10 @@ journalctl --user -u halogen-flash -f            # engine log (serve_api: ... t/
 ```
 
 Tuning notes (measured on this box, Sept 2026): weights pinned 65.6 GiB in 1.4 s; 37–45 t/s
-decode, 700–1,200 t/s prefill with 99 % prompt-cache hits; `HALOGEN_MAX_TOK=32768` is the fastest
-prefill chunk at 262K ctx; keep `HALOGEN_KV_POOL_POSITIONS` at 262144 on a 128 GB box that also
+decode, 700–1,200 t/s prefill with 99 % prompt-cache hits; `HALOGEN_MAX_TOK=16384` (32768 is marginally faster prefill but costs
+2 GB more scratch that the page cache needs more); `HALOGEN_HOST_RESERVE_GIB=32` (default 20)
+keeps room for the 47.7 GiB n-gram table, which is read through the page cache — with the
+default the table thrashed the NVMe at 6–8 GB/s and decode fell to 6–12 t/s; keep `HALOGEN_KV_POOL_POSITIONS` at 262144 on a 128 GB box that also
 runs a desktop — 393216 left 3.6 GiB of host memory and the engine froze 60–120 s every few
 minutes in kernel memory compaction (see "Host tuning" below); `HALOGEN_MAX_TOKENS_DEFAULT`
 16384 is the recommended agentic budget. Clients: OpenAI-compatible `/v1` with native tools and
