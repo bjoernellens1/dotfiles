@@ -67,3 +67,12 @@ sudo sysctl --system >/dev/null
 ```
 
 and don't run other multi-GB tenants (VMs) alongside the model: `virsh shutdown win11`.
+
+## Builds tried (2026-09-21)
+
+- **native `qwen38-flash-next-w4b.hgn` + quality overlay — keep.** 68 GB file-mapped weights, 47.7 GiB table paged.
+- bartowski `IQ4_XS` GGUF — **rejected**: same 47.7 GiB table, trunk repacked into 68.3 GiB *anonymous* RAM
+  (worse for the page cache than file-mapped weights), halogen warned the budget exceeded free host memory,
+  KV-pool reservation stalled >60 s; upstream measures GGUF trunks at −22 % agent-turn decode, no sidecar.
+- unsloth `UD-IQ4_XS` / `UD-Q4_K_XL` — not tried: 72–80 GiB resident (8-bit dense layers), −22…−28 % decode.
+- vLLM — not viable: FP8 173 GB minimum + 51 GB table in host RAM; gfx1151 unsupported.
