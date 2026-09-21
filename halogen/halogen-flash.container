@@ -1,0 +1,41 @@
+[Unit]
+Description=Halogen Flash Next native on Strix Halo
+# On-demand: started by halogen-flash-proxy.service (socket-activated on :8731),
+# stopped automatically when the proxy exits after its idle timeout.
+StopWhenUnneeded=yes
+
+[Container]
+Image=ghcr.io/peonist-ai/halogen-flash-server:0.12.3
+ContainerName=halogen-flash
+PublishPort=127.0.0.1:8732:8731
+AddDevice=/dev/kfd
+AddDevice=/dev/dri
+GroupAdd=keep-groups
+SecurityLabelDisable=true
+PodmanArgs=--ipc=host
+Ulimit=memlock=-1:-1
+Volume=%h/halogen-flash-models:/models:ro
+# persistent prompt cache (~27 KiB/token) so an on-demand restart resumes sessions in seconds
+Volume=%h/halogen-flash-cache:/cache
+Environment=HALOGEN_CACHE_DIR=/cache
+Environment=HALOGEN_CHECKPOINT=/models/qwen38-flash-next-w4b.hgn
+Environment=HALOGEN_TOKENIZER=/models/tokenizer
+Environment=HALOGEN_CTX=262144
+Environment=HALOGEN_KV_POOL_POSITIONS=393216
+Environment=HALOGEN_MAX_TOK=32768
+Environment=HALOGEN_PROMPT_CACHE=2
+Environment=HALOGEN_COMPOSABLE_CONTEXT=0
+Environment=HALOGEN_TEMPERATURE=1.0
+Environment=HALOGEN_TOP_P=0.95
+Environment=HALOGEN_TOP_K=20
+Environment=HALOGEN_REASONING_EFFORT=xhigh
+Environment=HALOGEN_MAX_TOKENS_DEFAULT=16384
+
+[Service]
+Restart=on-failure
+SuccessExitStatus=143
+RestartSec=15
+TimeoutStartSec=1800
+TimeoutStopSec=120
+# Hold 'started' until the API answers so the proxy never connects to a loading engine
+ExecStartPost=/bin/sh -c 'until curl -sf -o /dev/null http://127.0.0.1:8732/health; do sleep 1; done'

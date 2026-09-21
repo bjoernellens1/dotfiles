@@ -13,6 +13,7 @@ logic keeps working); **kitty launches fish** — the approach fish itself recom
 | `fish/conf.d/kitty.fish` | `icat`, `ssh`→`kitten ssh`, `d`→`kitten diff` |
 | `fish/fish_plugins` | Fisher: fzf.fish, autopair |
 | `starship/starship.toml` | dir · git branch/status · venv · node · duration |
+| `halogen/` | on-demand Qwen3.8-Flash-Next server for Strix Halo (podman quadlet + socket activation), see [halogen/README.md](halogen/README.md) |
 
 ## Install
 

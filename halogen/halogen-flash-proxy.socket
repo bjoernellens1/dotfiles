@@ -1,0 +1,9 @@
+[Unit]
+Description=Halogen Flash on-demand socket (:8731)
+
+[Socket]
+ListenStream=127.0.0.1:8731
+NoDelay=true
+
+[Install]
+WantedBy=sockets.target

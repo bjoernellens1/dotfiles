@@ -48,6 +48,17 @@ for f in "$HERE"/fish/conf.d/*.fish; do
 done
 link starship/starship.toml    "$CFG/starship.toml"
 
+# --- halogen (Strix Halo only; quadlets are inert elsewhere) -----------------------
+if [ -e /dev/kfd ] && grep -qs "gfx_target_version 110501" /sys/class/kfd/kfd/topology/nodes/*/properties; then
+  mkdir -p "$CFG/containers/systemd" "$HOME/halogen-flash-models" "$HOME/halogen-flash-cache"
+  link halogen/halogen-flash.container      "$CFG/containers/systemd/halogen-flash.container"
+  link halogen/halogen-flash-proxy.socket   "$CFG/systemd/user/halogen-flash-proxy.socket"
+  link halogen/halogen-flash-proxy.service  "$CFG/systemd/user/halogen-flash-proxy.service"
+  loginctl enable-linger "$USER" 2>/dev/null || true
+  systemctl --user daemon-reload && systemctl --user enable --now halogen-flash-proxy.socket
+  echo "  halogen: socket on :8731 (model starts on first connection); see halogen/README.md"
+fi
+
 # --- Fisher + plugins ---------------------------------------------------------
 fish -c '
   if not functions -q fisher

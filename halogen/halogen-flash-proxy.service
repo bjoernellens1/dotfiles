@@ -1,0 +1,8 @@
+[Unit]
+Description=Halogen Flash socket proxy (starts the model on first connection)
+Requires=halogen-flash.service halogen-flash-proxy.socket
+After=halogen-flash.service
+
+[Service]
+# exits after 30 min without connections -> halogen-flash.service is then unneeded and stops
+ExecStart=/usr/lib/systemd/systemd-socket-proxyd --exit-idle-time=30min 127.0.0.1:8732
