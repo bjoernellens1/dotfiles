@@ -5,8 +5,8 @@ fish_add_path -g ~/.local/bin ~/bin ~/.npm-global/bin ~/.opencode/bin \
 set -gx BUN_INSTALL $HOME/.bun
 set -gx EDITOR nano
 set -gx VISUAL "code --wait"
-set -gx OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS true
-set -gx OPENCODE_ENABLE_EXA 1
+# opencode: do not import ~/.claude/CLAUDE.md (Claude Code agent policy names agents opencode lacks)
+set -gx OPENCODE_DISABLE_CLAUDE_CODE_PROMPT 1
 
 status is-interactive; or exit
 
