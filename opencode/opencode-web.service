@@ -1,0 +1,22 @@
+[Unit]
+Description=OpenCode server + web UI (loopback; exposed to the tailnet via tailscale serve)
+Documentation=https://opencode.ai/docs/server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h
+ExecStart=%h/.opencode/bin/opencode web --port 3003 --hostname 127.0.0.1
+Restart=on-failure
+RestartSec=5
+# basic-auth credentials (OPENCODE_SERVER_USERNAME/PASSWORD), mode 600
+EnvironmentFile=%h/.config/opencode/server.env   # OPENCODE_SERVER_USERNAME=... OPENCODE_SERVER_PASSWORD=...
+Environment=PATH=%h/.opencode/bin:%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+# same prompt as interactive shells: do not import ~/.claude/CLAUDE.md
+Environment=OPENCODE_DISABLE_CLAUDE_CODE_PROMPT=1
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target
